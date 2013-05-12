@@ -4,7 +4,7 @@ use warnings;
 use strict;
 $|++;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 #----------------------------------------------------------------------------
 
@@ -49,7 +49,9 @@ my %default = (
     lastfile    => 'logs/uploads-mailer.txt',
     logfile     => 'logs/uploads-mailer.log',
     debug       => 0,   # if set to 1 will not send mails
-    test        => 1    # if set to 1 will only send to @ADMINS
+    test        => 1,   # if set to 1 will only send to @ADMINS
+    help        => 0,
+    version     => 0
 );
 
 #my $HOW  = 'blah';
@@ -61,18 +63,25 @@ Date: DATE
 
 ';
 
+my $archive = qr/\b(rar|tgs|tbz|zip|tar|pm|gz|bz2|tz)$/i;   # known archive formats posted
+my $accept  = qr/\.(?:(?:tar\.|t)(?:gz|bz2)|zip)$/i;        # valid archives
+my $ignore  = qr/
+    \.(pl|sh)                           |   # ignore scripts
+    \.(gif|png|jpg)                     |   # ... images
+    \.(readme|meta|yml|json|changelog)  |   # ... package files
+    \.(asc|pdf|ppm|patch|pod|txt)       $   # ... docs and patches
+/xi;
+
+
 #----------------------------------------------------------------------------
 # The Application Programming Interface
 
 sub new {
     my $class = shift;
-    my %opts  = @_;
 
     my $self = {};
     bless $self, $class;
 
-    $self->{options} = {};
-    $self->{default}{$_} = $self->_defined_or($opts{$_}, $default{$_})  for(keys %default);
     $self->_init_options(@_);
     return $self;
 }
@@ -94,14 +103,10 @@ sub process {
         next    unless($id && $id > $lastid);
         $last_id = $id;
 
-        next    unless(defined $cpan);
-        next    if($dist =~ /\.(?:(?:tar\.|t)(?:gz|bz2)|zip)$/i);   # valid archives
-        next    if($dist =~ /\.(pl|sh)/i);                          # ignore scripts ...
-        next    if($dist =~ /\.(gif|png|jpg)/i);                    # ... images ...
-                                                                    # ... docs and patches, etc.
-        next    if($dist =~ /\.(asc|pdf|ppm|patch|readme|meta|yml|pod|txt|changelog)/i);
+        next    unless(defined $cpan);          # must have a PAUSE id
+        next    if($dist =~ /$accept|$ignore/); # accepted valid archives or ignored extensions
 
-        if($dist !~ /\b(rar|tgs|tbz|zip|tar|pm|gz|bz2|tz)$/i) {     # only attempts caught for now
+        if($dist !~ /$archive/) {               # not a known archive format
             $self->{mail}{others} .= "$id,$path\n";
             next;
         }
@@ -223,8 +228,10 @@ sub _defined_or {
 
 sub _init_options {
     my $self = shift;
+    my %opts  = @_;
 
-    GetOptions( $self->{options},
+    my %options;
+    GetOptions( \%options,
         'source|s=s',
         'logfile=s',
         'lastfile=s',
@@ -234,10 +241,11 @@ sub _init_options {
         'version|v'
     );
 
+    $self->{options} = ();
+    $self->{options}{$_} = $self->_defined_or($options{$_}, $opts{$_}, $default{$_})  for(keys %default);
+
     _help(1) if($self->{options}{help});
     _help(0) if($self->{options}{version});
-
-    $self->{options}{$_} = $self->_defined_or($self->{options}{$_}, $self->{default}{$_})  for(keys %default);
 
     unless(-f $self->{options}{source}) {
         print "No uploads source log file [$self->{options}{source}] found\n\n";
@@ -256,7 +264,7 @@ sub _help {
 
 Usage: $0 \\
         [--logfile=<file>] [--source=<file>] [--lastfile=<file>] \\
-        [--test] [--debug] [-h] [-V]
+        [--test] [--debug] [-h] [-v]
 
   --logfile         log file from cpanstats-verify
   --source          results output file
@@ -264,7 +272,7 @@ Usage: $0 \\
   --test            send mails to admin only
   --debug           do not send mails
   -h                this help screen
-  -V                program version
+  -v                program version
 
 HERE
 
@@ -352,7 +360,7 @@ F<http://devel.cpantesters.org/> (Development)
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2010-2012 Barbie for Miss Barbell Productions.
+  Copyright (C) 2010-2013 Barbie for Miss Barbell Productions.
 
   This module is free software; you can redistribute it and/or
   modify it under the Artistic Licence v2.

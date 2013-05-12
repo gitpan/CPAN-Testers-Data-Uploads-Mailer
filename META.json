@@ -1,6 +1,6 @@
 {
     "name": "CPAN-Testers-Data-Uploads-Mailer",
-    "version": "0.04",
+    "version": "0.05",
     "abstract": "Verify CPAN uploads and mails reports",
     "author": ["Barbie <barbie@cpan.org>"],
 
@@ -35,8 +35,8 @@
         },
         "test" : {
             "requires": {
-                "IO::File": "0",
-                "Test::More": "0.70"
+                "Test::More": "0.70",
+                "Test::Trap": "0"
             },
             "recommends": {
                 "Test::Pod": "1.00",
@@ -50,7 +50,7 @@
     "provides": {
         "CPAN::Testers::Data::Uploads::Mailer": {
             "file": "lib/CPAN/Testers/Data/Uploads/Mailer.pm",
-            "version": "0.04"
+            "version": "0.05"
         }
     },
     "no_index": {

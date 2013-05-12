@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
 use strict;
 
-use IO::File;
-use Test::More tests => 7;
 use CPAN::Testers::Data::Uploads::Mailer;
 use File::Slurp;
 use File::Path;
+use IO::File;
+use Test::More tests => 7;
 
 my %params = (
     source      => 't/samples/uploads.log',
@@ -16,6 +16,9 @@ my %params = (
 );
 
 rmtree('t/test');
+
+mkpath('t/test');
+write_file($params{lastfile},39941);
 
 {
     my $mailer;
@@ -50,4 +53,3 @@ rmtree('t/test');
     my $text = read_file($params{logfile});
     like($text,qr/barbie\@missbarbell\.co\.uk/,'.. logfile updated');
 }
-
