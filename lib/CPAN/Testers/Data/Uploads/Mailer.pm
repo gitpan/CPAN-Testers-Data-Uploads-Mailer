@@ -4,7 +4,7 @@ use warnings;
 use strict;
 $|++;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 #----------------------------------------------------------------------------
 
@@ -360,7 +360,7 @@ F<http://devel.cpantesters.org/> (Development)
 
 =head1 COPYRIGHT AND LICENSE
 
-  Copyright (C) 2010-2013 Barbie for Miss Barbell Productions.
+  Copyright (C) 2010-2014 Barbie for Miss Barbell Productions.
 
   This module is free software; you can redistribute it and/or
   modify it under the Artistic Licence v2.
